@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>BaitCountOnRod</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableHarmony>true</EnableHarmony>
+    <AssemblyName>BaitCountOnRod</AssemblyName>
+    <ModFolderName>(4KMong) Bait Count On Rod</ModFolderName>
+    <GameModsPath>$(ProjectDir)_package</GameModsPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.4.0" />
+  </ItemGroup>
+</Project>
