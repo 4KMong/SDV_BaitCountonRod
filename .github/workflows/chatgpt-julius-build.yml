@@ -1,0 +1,43 @@
+name: Build patched Julius 1.8.0
+on:
+  push:
+    branches:
+      - chatgpt-julius-1.8-qol-build
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      SDL_VERSION: 2.32.8
+      SDL_MIXER_VERSION: 2.8.1
+      COMPILER: mingw-32
+      SKIP_UPLOAD: true
+    steps:
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw32
+          location: D:\
+          install: mingw-w64-i686-gcc
+          update: true
+      - name: Clone Julius 1.8.0
+        shell: powershell
+        run: git clone --depth 1 --branch v1.8.0 https://github.com/bvschaik/julius.git julius
+      - name: Create and apply patch
+        shell: powershell
+        run: |
+          python -c "import base64,gzip; open('apply_patch.py','wb').write(gzip.decompress(base64.b64decode('H4sICHqonGoCA2FwcGx5X2FsbF9zaW5nbGVleGUucHkA7TxrbxtXdt/1K64ZwORYQ0qUH/VKpgtKoiXCNKUlKThe2x0MZy7JGw1nuDNDS1xFC2fXLbpNP7RoUwQLJzDQDYIt8sFNnN0UyKf+HJP+Dz3nzpszQ5G25KLNGrDEmXvuued1z+teqmMafTKQ7Z7G2oT1B4Zpk314XHI/WyNraYl1iEb1HHwuyGb3iUAulcja+hKBf6bMLEqaI8um/coxs3OZA0vu0nUyGNk9QyfyYKCNpF8amgSLKL3CYERufTTU2NDKFws3C6t5yxiaCs2rzLydEZZMw7BJiVPgL/ew+FgomNQytCc0JyAxOgDlOOgKyVimkhEKzJIARU5IoaqDYAQgqGIb5ohj6BhDXV0nJ4joFNZeUmmHmFRWcybVhHX4aA9N3VloBV8VcFCy6bGdo7piqEzvljJDu5O/CbNx8pHJbIqzRQvmhybyAWemJU7PFXV6pDGdljKPdBeRSQccDTE0VSQwLhIFqLVLRZdBq+QTyp9BKFaBg+RgikBuOfAOcCCRBrxjfVoxTcMEmZzA/NN1IutKzzAjMgEkD9eLq6uPL5koGsQQYg4EMdBkheJaSL3IFxNAhEg4inpFMUwKP/QO6xZ6GXEpgyi29up3qjvSQVVq7u7dl+6XW5WG1Gw1DrZaB42K1CjXdyriIz0BFB4duOpeXWpWfxEH263u7Nbgf0uqVXYAqim+j1U52E6jup08sl9utKrlGoeQyo29g/p2BGnyrHvlxt1KK4WwBD6FZLErIIAsTs4MmWT1jCPpSLapKVm2OVTAtKlkynqXZtwlfCiY7oAwQ5cs9qsIRI91wVV0e7ak0S4AWBkxewHLcIiuydTYy4Fs2kzW+KAkm2ivEVSxCX3ZPKR2nIgkTkKStGGCpcmIMvw5MOZWQ3K1cqZZTYGmmVUAlm7MF7nqtDFPjcxpzFOzEox5Jp8pKqB6V2NWLzDqkzPZI5km6J+optztym2NkrCZEG5xp77xnhM6h8GTJJm68yOzuIWnzTpT3i5Gd0dwZMTZEZFVUheIqMZF5uwWwncLOeox4LM9ZBrGK5RWinYOwe3I+mLKGf/L8/GXn7/+8w/k9X++mjz7A5l8+pxMXjybfPuKvPnkm9c/vCRv/vk5vFxQS4vgnamu19/+cfLlP5Hxd68mX7yCae+iKI+Uf/9x/N1TMv7T0/GfnhF3gTOomdISgE6+/CrM2/jbf508fxYSVkhJR0xXjaNQRCCZDyDBgGyD3Ct/KN2vbu9UWk2ydiN15GeZWegcp3TSerBfkbZ2K1t3N/c+FOeLuHO5skAoM1dIsIOzLOVszHHnNMtznYr/v6UR2hkJ22XO+WfvlAW31pzrRvfQjA12AVYBWfEHZAd98xGDkmhok/KwO7TsoUWgHqCmDq4bh6U7Q00jsmVRG2sPXaUmFCxy3wB3DrOwQrDcCkYbFcJ7Uu1Se0Vh9khyV5CMJ9TU5BHf8NkPmK5oQ5WSTNeUBz2mWCusDzUapDKP9GwygPeBw8xGICzxVAxqGgqVm5nNZi0booJCnhjAMwRKSNA4xIAdUy3HdJsciwR/jYSlE15aKIZmmJJNrnAQwOKtIwFn7jyYMxI2IuAKQDpTnPeI04R3OYXcvk2KNwRymawedzrBaNcfvRkfbMOgEnnLkZnkCrlKlsnPAN8KueaMcETdpBHEkmsnjfjcAcpbtzh9HyMS+HwTP7Y3lk6XlsLCg1zDyYIli3b7FIq7sPScX6r7qPrS7EAtxwEZrLW6Ab9ulchV/LC8LJATvySMqeYYKFaPgXQGRF9dBYHji5H/whX/aTqZNuQLKRqGfIQoGhtITO8Y5Ap+nFa0P8yVLZIbRZFcLbqrQoWbu4QQ+dtQ6z9hFsMc7OOPifMOfw6oy4kFKX3HTh00MeuHUV8SiVC2MUjF0DZs2+iHhek0CzwB4c+48lC+XKwi/1W87rKWDHnDVUDxukjyc8B7CsPfHD4/a0KAOwAFtcLund+zZGJG0DEMe2CyREPl6xudDvg34ZF+AvN9v7H8bpiEuUl2AjQ3J3RgEl+KWUaf2iZTgkWljmn0nVHHpDk0U0XiWKbjgfqydShsOAHj9JF+epH4/S3gZeMATS5fJk4qhtsnlxCrBTDRYH7UFPjCjlcNQE5D3ITbOWG5+hR0e4Zlv6cYMy8lkSS2Va1VIIW9/khPHwne8iwAB7erzVa5vlUh11Z5R45jnx3gIl2J/+OBrlhcS4t00aFIqIsOvWWsi4jx4mJegrbeKfZF8MViYNxp/cSDYqKWZwbH1BlnBMnZK80IlskTU4JmzB7CLcf5TCEULhwTlbVBT3bjQtc0hoPcDlQ/+xJUhY1ytS7dqZVb3IsJXszY2qvtNcB/Ne9Km7WDyhnxPMl1xoOwJttJ9uz7pSBMuRHd95TL74xtbp/vBN1TAjZI+Y6wRwPw1CWyeVCtbVfrO9L9Sq0WiYQIlR45E2vveCjl5DxhFJMVk8pKjzMHe9VVfEjNYJciWRO91Gao27IHlhB9fSv0eJ3KD/ycY4rlSyGWt2qVckOqlevbQPdfZJTIshPyF2A63Cl4R16B0YSMQ4z7j/diHwvutSknBiELOc3fDr1zSUDIzlDTAJdmKIdUBViIVJFXOWcyUO58AJeA5Ip+45mfDokRt7nxFqTMVO1ZjaaouhdS9RQbnonHkoZQKXGxohOWnMoq83OjRvixPD+mZ1RdBx+Op9bCUufsewGiSWM3Ay6V1tbjp+/ZpDsBpiGrnA2gUe9qlB7TmbcDss7tgNKsuwHBCX7s/D7x9D7LT+CzkdP78Nl92sm9O88/uc/yGsU/uRcNUReV2GF9/KheuKWsJx7NZ0/MlIN5/1g+GzmWDx/K4+ICbzs26BBQG5DbMV3WRDLU4VnlNkKurxLZInaPEl8TTlcxi27AM6AVhC30siI/f/HdBzqsRnXzgDeQtyp1DAYH9YNmZRus9PqqOA3f2Ctvb9b2tu66w5y6ig5kUQq22CWQYA0ht5K1I3lkEarjCZuaRA8CFhQX/4m/wE65sV3BZqz/Zr9W/kU59Fyp71TrlUqjKe3vNVuhgRps/80GnneEXjZ3q/ve27dYzOf3fAgQzhKEIzCJdSBx1Iwj8AyuCD2HMIfmhA0XWWKw9DmKOMIr7jKg1qLnvsLUWgoAmMzwyfYp5m5UBuucg7L1aKB1N7aHu+Cy7Icr62G5BjKtbEuzcD/eSKXE5zV54eKGY7/FY8hYOgyYBW/RKZADwCHrhB4zy0abPgLCiDXADUp4Dk8sAzYz3ufxazyYDxUbs+AlVbnFl6JqBtwDCpGCgtPIbgS+ZIPIJavAdJUe57yGhO/1g0kk+PiweG31MSjqJAuTaTD5FAQhwyt+wlCyHsrr9HHBgnjgnDnkYIipx6V8cQmrbCbiW4hOYHPDPjVl8D4cznV2DH1goY9RJWdm/+aRdeXRCf5Qs3yiEFxJAqTLpeJSKPXCZUrXVwMQ/MeRP2SPS84mLPI8kaxdE8nqqUhWVhLUlo0gaIPEDpcwFUr0tdmQsJjOMCZDzDTJB+Agfc8LCvcd7cN1+fEyevzCRwbTXeaXrYd0/bHrdPvGE4pXt4gKlmCy9hAPyfNgrjbgbRvG4SGlA7QQDLBWkpeLbRfck+387di2nLGdYwmLvz8kk5MohcmTHPJy7VAaAmsnup7w7YLIhsZ/l3ILEMlbmFHaerKVSJiAKdjUWkV8xYV+hx2DF/IjGZg9U6h/4mYbQ6WHAleuFij6TqhQNaLKthwSvnu4zSmRIt7VS8cUyIJhA/HZvDnjJ+DIspC/jQAbyZPSHSr5a1JcJetnop1bE3zVoWmC3KSFSE6Y+J7J5hlM/60Ij009D9LBsvY9vOvcvIiha5BmDyDppOYTJ3kiYJ/gWXTIr/DUFnMqfwOfwb0U2elBF7wvD/wJvDqw3Fb62TBRAEz9w030eUnxTBgcbHg3EteL5WQNgpmTTwohP/N2EX3KBciqOts3RVz74nEc5CJFBYdLon/FErrNC6o2r6aKYnRm0KsLN+WCJgokHoJIvCad95587L9Ckqa5QHIcKoYD8ElUkoEtXh9ZuTAxV1PYX1yxuF/4LU2LqVSC+gDky29ySXLbwg66mDJs8qb+aqikju0yTFwfQIKMfeJ4l2m33LgT+PGLpCM5YeVHJyDZoF+A0g/Vx7EjMd5j5ypyNrnErFwIgxhVLXCdoNwzZvJmWshIEuym/PODyvbBViul7XQkmzov93vGUe5+uVGP9ngkqDu2KzHDc/PZ1YQDwBlts/kU7Fx7wb5R4JmJrCh0YFtRpynrELjpR1SBAR3yJGeQu7NwcE5vS80qW3hhhlnGtAojLZqICiMS9lN+r7h5j2vNY9znyZqwkLhTadsBa97dAy+faCAQEA7u7e+Wa1K5sbWbCMLlGLNzKD7aTFWp7rFKLpfIr8Pshc34nImMkpKi+SRMyV7oLfhxSgtDhpLLIjY4fpswGzs4MoQBbBQRpydobhCVYv3JHSXWoIc4A95gMUqhQiX+BgvtL0wVuG/CLWpZMS0n1R6+DGO8MYuHL+6iF0GEIkwCSJdiZKWQAXdYd2jSFSxz0PPEqhROim/Y4PYjOYFs52zZxMQw3DkVFpKBlzwZvIrkPQqUfB/LELsH2UO3R7oQ3KBAsegUdUFyguu5zV7noUTekuwp388FEEGcqpA0qHStLMT7il+1OUa+pVGZ9wTlUD0H6bZtwA+eXPM0WxshDFc+g1yHYmrewb6KZU3Z9VSO7JmC95pcaU9LNXTJRgjlGFN3b4JHS+rIZt+z7VChuuAamJw4jHpWPb3krM3xlpQKc0nL90ROZpCgcDRFJzfGNCochOKwyXm05/wOdmoPpJ1GudkUyHLyZG744PdUo8+lGTZ4cpn8lTCd60znYk4LJDlW8sSpvFmrTCM5TRYGSjysNyFNPN7i0wKaWR5ESwQLDwZhDffGindRJUbpT1xNReeE4cNKHiohPEmmKsGCEsrLdezBOo0gQlWGW+6XQ2YCAPY30b9gg9bfuTqE3JBDSf1emGsa5/Bdr4UxxV2BVC/fmw2wXWluzUOLkMy6/30s73DkvL6OdTHfxkqTEMk0vBBzFjwXGMlsIqzlRzNsAvFOo5tnOV+Z4hEPh0OpWL4t49mbB2gbZIChKvjCTjbtW1ULCGWxL1Vd8Heq0oU+/tsfJr/9hEy+/Gry2YvxNz/OKfvxy5dvfv+Pbz7/jEyePR//17PJPwAlX/wwfvHV5IvPyZu/+/7Nv/1u8sUzMv76d6+/eyGS8X/8cfLik8nXT1+/fArkfvbms1eTr5+Rye9fjV9+/t9/fv39N+OvAwxPEcPr734ENt785vvxp38//vQPrnrAlWyiP3COKdEjEGtAFSZreew4zd9EhkABIRjMA5I22zb0nBeFpwoMemw7t8Gczhee9AeGgZcOcp6gpHKtBh753n6t0hSSulU27UvHsCTr6qLT8h55zY9lcq9SP5AeSHt37jQrLXi+5r2rAkppt4K+AO9AJiAOwO5Xt1u7IrmzV29J9b3GPX6NolKpi2Q1cnslMSRpMqYacX7XbnpHl/+LHAgzSsqfuh4XaLotKIq4y/iLYV+oYXMHd4/pkOpphF8Ezisag6qLX0seyDrVEnMjkfBTgEiWleILefEB2KaOOfzL/pZiUqrHzziSABJGUc6xU4451p8CWRlCks3sUZyOWYABVPofDZiTskhjN3KWsb/Xgrz3gXR/r3EX4vT+elztwfWEd0A03wnK9G0I56ZSKRu79NuWlcMu/056Dl/izV4QxRJWMMh0aerbFHxOcDOM33uPSAn/1gMqm1xRHFyc5vztHtUGWOwGhwLGEP8KBTdevgNzAHXs1xDwMAo/HDHV7jnX6izRQcj/NoTzxtsu5+bE0mjB6+VrInEmYfIFOzxGHd/NtXJjpyJt1sp4x2g1TmB/qKGJ6nROCjHFSqEQ78mvTZN549psMkmeg4Q9T5jY00c62IF7O33mnnBMS/QsZtl5XmQzhQJWe55LwPxaHUcatNZC93Jzl10bFDbmXSQ9LCYZfIA/MeieNw/g/Z37oNkmv4iZp8c0fJMickE0Kzr3Q/8HpuSIKDhKAAA=')))"
+          python apply_patch.py julius
+      - name: Install SDL
+        shell: powershell
+        working-directory: julius
+        run: ./.ci_scripts/install_sdl.ps1
+      - name: Build Julius
+        shell: powershell
+        working-directory: julius
+        run: ./.ci_scripts/run_build.ps1
+      - name: Upload julius.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: julius-patched-exe
+          path: julius/build/julius.exe
+          if-no-files-found: error
