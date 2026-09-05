@@ -1,7 +1,7 @@
 {
   "Name": "Bait Count On Rod",
   "Author": "4KMong",
-  "Version": "1.0.1",
+  "Version": "%ProjectVersion%",
   "Description": "Show bait stack count on fishing rod icon in menus.",
   "UniqueID": "4KMong.BaitCountOnRod",
   "EntryDll": "BaitCountOnRod.dll",
