@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +22,10 @@ namespace BaitCountOverlay
         {
             Log = this.Monitor;
 
+            // Cached item sprites may become stale when another mod invalidates game content.
+            // The cache is tiny, so clearing it on any content invalidation is cheap and robust.
+            helper.Events.Content.AssetsInvalidated += (_, _) => BaitOverlayPatch.ClearSpriteCache();
+
             try
             {
                 var harmony = new Harmony(this.ModManifest.UniqueID);
@@ -40,8 +44,10 @@ namespace BaitCountOverlay
         private static readonly Dictionary<string, (Texture2D Tex, Rectangle Src)> SpriteCache =
             new(StringComparer.Ordinal);
 
-        private static readonly MethodInfo? MiGetBait =
-            AccessTools.Method(typeof(FishingRod), "GetBait") ?? AccessTools.Method(typeof(FishingRod), "getBait");
+        internal static void ClearSpriteCache()
+        {
+            SpriteCache.Clear();
+        }
 
         // Patch only ONE primary overload (max parameters) to avoid duplicate drawing.
         static IEnumerable<MethodBase> TargetMethods()
@@ -110,10 +116,10 @@ namespace BaitCountOverlay
                 if (bait == null || bait.Stack <= 0)
                     return;
 
-                // (3) bait icon in top-left (final: 1px DOWN compared to previous)
+                // bait icon in top-left
                 DrawBaitIcon(spriteBatch, bait, location, scaleSize, transparency);
 
-                // (1)(2) bait count EXACT slingshot formula, final: 1px DOWN compared to previous
+                // bait count, matching the vanilla slingshot stack-count placement
                 int count = bait.Stack;
                 float digitsScale = 3f * scaleSize;
                 int width = Utility.getWidthOfTinyDigitString(count, digitsScale);
@@ -141,17 +147,18 @@ namespace BaitCountOverlay
 
         private static Item? TryGetBaitItem(FishingRod rod)
         {
-            if (MiGetBait != null)
+            try
             {
-                try
-                {
-                    object? r = MiGetBait.Invoke(rod, Array.Empty<object>());
-                    if (r is Item it && IsBait(it))
-                        return it;
-                }
-                catch { }
+                Item? bait = rod.GetBait();
+                if (bait != null && IsBait(bait))
+                    return bait;
+            }
+            catch (Exception ex)
+            {
+                ModEntry.Log?.Log($"FishingRod.GetBait failed: {ex.Message}", LogLevel.Trace);
             }
 
+            // Defensive fallback for unusual/custom rod implementations.
             try
             {
                 foreach (var att in rod.attachments)
@@ -174,7 +181,6 @@ namespace BaitCountOverlay
 
         private static void DrawBaitIcon(SpriteBatch b, Item bait, Vector2 location, float scaleSize, float transparency)
         {
-            // top-left anchor + a bit inset; final: 1px DOWN compared to previous
             Vector2 iconPos = location + new Vector2(4f, 3f);
             float iconScale = 2f * scaleSize;
 
