@@ -31,9 +31,9 @@ jobs:
         shell: powershell
         working-directory: julius
         run: |
-          $p = Get-Content .ci_scripts/run_build.ps1 -Raw
-          $p = $p.Replace('-DSYSTEM_LIBS=OFF -D CMAKE_C_COMPILER', '-DSYSTEM_LIBS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -D CMAKE_C_COMPILER')
-          Set-Content .ci_scripts/run_build.ps1 $p
+          $p = Get-Content CMakeLists.txt -Raw
+          $p = $p.Replace('cmake_minimum_required(VERSION 3.1)', 'cmake_minimum_required(VERSION 3.5)')
+          Set-Content CMakeLists.txt $p
       - name: Install SDL
         shell: powershell
         working-directory: julius
