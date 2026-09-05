@@ -1,10 +1,13 @@
 {
   "Name": "Bait Count On Rod",
   "Author": "4KMong",
-  "Version": "1.0.0",
+  "Version": "1.0.1",
   "Description": "Show bait stack count on fishing rod icon in menus.",
   "UniqueID": "4KMong.BaitCountOnRod",
   "EntryDll": "BaitCountOnRod.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": ["Nexus:41957"]
+  "UpdateKeys": [
+    "Nexus:41957",
+    "GitHub:4KMong/SDV_BaitCountonRod"
+  ]
 }
