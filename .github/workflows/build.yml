@@ -1,0 +1,78 @@
+name: Build and release
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Add Stardew Valley build environment
+        uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment@v1
+
+      - name: Build release package
+        shell: pwsh
+        run: ./build-release.ps1
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BaitCountOnRod
+          path: artifacts/BaitCountOnRod-*.zip
+          if-no-files-found: error
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Read project version
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content "4KMong.BaitCountOnRod.csproj"
+          $version = $project.Project.PropertyGroup.Version | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($version)) { throw "Project version not found." }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Verify tag matches project version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $expected = "v${{ steps.version.outputs.version }}"
+          if ($tag -ne $expected) {
+            throw "Tag '$tag' does not match project version '$expected'."
+          }
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: BaitCountOnRod
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: artifacts/BaitCountOnRod-*.zip
+          name: Bait Count On Rod ${{ steps.version.outputs.version }}
+          generateReleaseNotes: true
+          allowUpdates: false
