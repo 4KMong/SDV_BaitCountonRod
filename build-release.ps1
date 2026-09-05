@@ -4,7 +4,7 @@ $projectPath = Join-Path $PSScriptRoot "4KMong.BaitCountOnRod.csproj"
 $manifestPath = Join-Path $PSScriptRoot "manifest.json"
 
 [xml]$project = Get-Content $projectPath
-$version = $project.Project.PropertyGroup.Version | Select-Object -First 1
+$version = [string]($project.Project.PropertyGroup.Version | Select-Object -First 1)
 if ([string]::IsNullOrWhiteSpace($version)) {
     throw "Project version not found in 4KMong.BaitCountOnRod.csproj."
 }
@@ -38,7 +38,8 @@ Copy-Item $dllPath (Join-Path $stageDir "BaitCountOnRod.dll")
 
 $manifestText = Get-Content $manifestPath -Raw
 $manifestText = $manifestText.Replace("%ProjectVersion%", $version)
-Set-Content -Path (Join-Path $stageDir "manifest.json") -Value $manifestText -Encoding utf8NoBOM
+$stagedManifestPath = Join-Path $stageDir "manifest.json"
+[System.IO.File]::WriteAllText($stagedManifestPath, $manifestText, (New-Object System.Text.UTF8Encoding($false)))
 
 Compress-Archive -Path $stageDir -DestinationPath $zipPath -CompressionLevel Optimal
 
