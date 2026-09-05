@@ -22,6 +22,11 @@ A lightweight Stardew Valley SMAPI mod that shows the equipped bait icon and rem
 3. Extract the `(4KMong) Bait Count On Rod` folder into your Stardew Valley `Mods` folder.
 4. Launch the game through SMAPI.
 
+The installed mod folder contains only:
+
+- `BaitCountOnRod.dll`
+- `manifest.json`
+
 ## Updates
 
 The mod supports update checks through both distribution channels:
@@ -29,7 +34,18 @@ The mod supports update checks through both distribution channels:
 - Nexus Mods: https://www.nexusmods.com/stardewvalley/mods/41957
 - GitHub Releases: https://github.com/4KMong/SDV_BaitCountonRod/releases
 
-## Building from source
+## Automated builds
+
+GitHub Actions builds the mod automatically on pushes, pull requests, and manual workflow runs.
+
+- Normal builds create a downloadable `BaitCountOnRod-<version>.zip` artifact.
+- Pushing a version tag such as `v1.0.1` creates the matching GitHub Release automatically.
+- The tag version must match the `<Version>` value in `4KMong.BaitCountOnRod.csproj`.
+- The generated release ZIP contains only the mod folder with `BaitCountOnRod.dll` and the processed `manifest.json`.
+
+The project version is maintained in `4KMong.BaitCountOnRod.csproj`. The source `manifest.json` uses `%ProjectVersion%`, which is replaced with the project version during packaging.
+
+## Building locally
 
 The project uses `Pathoschild.Stardew.ModBuildConfig` and targets .NET 6.
 
@@ -39,7 +55,7 @@ On a development PC with Stardew Valley installed:
 ./build-release.ps1
 ```
 
-The script builds the project in Release configuration and creates a ready-to-upload ZIP in the `artifacts` folder.
+The script builds the project in Release configuration and creates the same two-file mod package in the `artifacts` folder.
 
 ## License
 
