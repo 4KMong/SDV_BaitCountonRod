@@ -43,6 +43,9 @@ jobs:
       - name: Apply Julius patch
         shell: powershell
         run: python tools/apply_julius_patch.py julius
+      - name: Apply in-game grid menu overlay
+        shell: powershell
+        run: python tools/grid_topmenu_overlay.py julius
       - name: Capture patched source diff
         shell: powershell
         run: |
