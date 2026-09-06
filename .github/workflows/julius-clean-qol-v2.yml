@@ -1,0 +1,86 @@
+name: Build clean Julius 1.8.0 QoL v2
+on:
+  push:
+    branches:
+      - chatgpt-julius-clean-qol-v2
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      SDL_VERSION: 2.32.8
+      SDL_MIXER_VERSION: 2.8.1
+      COMPILER: mingw-32
+      SKIP_UPLOAD: true
+    steps:
+      - name: Checkout clean temporary branch
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw32
+          location: D:\
+          install: mingw-w64-i686-gcc
+          update: true
+
+      - name: Clone pristine Julius 1.8.0
+        shell: powershell
+        run: git clone --depth 1 --branch v1.8.0 https://github.com/bvschaik/julius.git julius
+
+      - name: Apply user-confirmed working QoL baseline
+        shell: powershell
+        run: |
+          $url = 'https://raw.githubusercontent.com/4KMong/SDV_BaitCountonRod/483a1890dcb8f3aa3f12685d0764e54d8313b73f/tools/apply_julius_patch.py'
+          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP\apply_known_good.py"
+          python "$env:RUNNER_TEMP\apply_known_good.py" julius
+
+      - name: Apply clean grid top-menu only overlay
+        shell: powershell
+        run: python tools/apply_grid_topmenu_clean.py julius
+
+      - name: Verify no legacy market-range experiment
+        shell: powershell
+        run: |
+          $bad = Select-String -Path 'julius/src/**/*.c','julius/src/**/*.h' -Pattern 'CONFIG_UI_SHOW_MARKET_RANGE|MARKET_MAX_DISTANCE|draw_market_range' -ErrorAction SilentlyContinue
+          if ($bad) { $bad | Format-Table; throw 'Legacy market-range code detected' }
+          if (-not (Select-String -Path 'julius/src/figure/roamer_preview.c' -Pattern 'BUILDING_DOCTOR')) { throw 'Roamer preview mapping missing' }
+          if (-not (Select-String -Path 'julius/src/widget/top_menu.c' -Pattern '\{19, 64, menu_options_grid, 0\}')) { throw 'Native in-game grid menu item missing' }
+          if (git -C julius diff --name-only | Select-String '^src/graphics/menu.c$') { throw 'Generic menu renderer was modified; clean build forbids this' }
+
+      - name: Capture exact source diff
+        shell: powershell
+        run: |
+          git -C julius diff --no-ext-diff | Out-File -Encoding utf8 julius-clean-qol-v2.diff
+          Get-Content julius-clean-qol-v2.diff
+
+      - name: Upload exact source diff
+        uses: actions/upload-artifact@v4
+        with:
+          name: julius-clean-qol-v2-source-diff
+          path: julius-clean-qol-v2.diff
+          if-no-files-found: error
+
+      - name: Make old Julius CMake compatible with current CMake
+        shell: powershell
+        working-directory: julius
+        run: |
+          $p = Get-Content CMakeLists.txt -Raw
+          $p = $p.Replace('cmake_minimum_required(VERSION 3.1)', 'cmake_minimum_required(VERSION 3.5)')
+          Set-Content CMakeLists.txt $p
+
+      - name: Install SDL
+        shell: powershell
+        working-directory: julius
+        run: ./.ci_scripts/install_sdl.ps1
+
+      - name: Build Julius
+        shell: powershell
+        working-directory: julius
+        run: ./.ci_scripts/run_build.ps1
+
+      - name: Upload julius.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: julius-clean-qol-v2-exe
+          path: julius/build/julius.exe
+          if-no-files-found: error
