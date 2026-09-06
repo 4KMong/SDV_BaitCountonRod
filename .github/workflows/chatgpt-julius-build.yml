@@ -21,6 +21,20 @@ jobs:
           location: D:\
           install: mingw-w64-i686-gcc
           update: true
+      - name: Clone Augustus source for feature tracing
+        shell: powershell
+        run: git clone --depth 1 https://github.com/Keriew/augustus.git augustus
+      - name: Trace Augustus implementations
+        shell: powershell
+        run: |
+          python tools/trace_augustus.py augustus | Out-File -Encoding utf8 augustus-trace.txt
+          Get-Content augustus-trace.txt
+      - name: Upload Augustus trace
+        uses: actions/upload-artifact@v4
+        with:
+          name: augustus-source-trace
+          path: augustus-trace.txt
+          if-no-files-found: error
       - name: Clone Julius 1.8.0
         shell: powershell
         run: git clone --depth 1 --branch v1.8.0 https://github.com/bvschaik/julius.git julius
