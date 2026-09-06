@@ -43,6 +43,17 @@ jobs:
       - name: Apply Julius patch
         shell: powershell
         run: python tools/apply_julius_patch.py julius
+      - name: Capture patched source diff
+        shell: powershell
+        run: |
+          git -C julius diff --no-ext-diff | Out-File -Encoding utf8 julius-patched.diff
+          Get-Content julius-patched.diff
+      - name: Upload patched source diff
+        uses: actions/upload-artifact@v4
+        with:
+          name: julius-patched-source-diff
+          path: julius-patched.diff
+          if-no-files-found: error
       - name: Make old Julius CMake compatible with current CMake
         shell: powershell
         working-directory: julius
