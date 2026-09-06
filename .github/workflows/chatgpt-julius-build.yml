@@ -46,6 +46,9 @@ jobs:
       - name: Apply in-game grid menu overlay
         shell: powershell
         run: python tools/grid_topmenu_overlay.py julius
+      - name: Apply Augustus-style inventory controls
+        shell: powershell
+        run: python tools/apply_inventory_patch.py julius
       - name: Capture patched source diff
         shell: powershell
         run: |
